@@ -1,0 +1,46 @@
+[project]
+name = "VisualInertialBundleAdjustment"
+description = "Implements Visual-Inertial optimization for Aria gen1/gen2 devices"
+homepage = "https://github.com/facebookresearch/visual_inertial_bundle_adjustment"
+license = "MIT"
+channels = ["conda-forge"]
+platforms = ["linux-64", "linux-aarch64", "osx-64", "osx-arm64", "win-64"]
+version = "1.0"
+
+[tasks]
+clean = "rm -rf ./build"
+prepare = "cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+prepare_debug = "cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+build = "cmake --build build -- -j32"
+build_st = "cmake --build build"
+test = "ctest --test-dir build"
+
+prepare_and_build = { depends-on = ["prepare", "build"] }
+build_and_test = { depends-on = ["prepare_and_build", "test"] }
+run_c = { depends-on = ["build_and_test"] }
+
+[dependencies]
+cmake = "4.0.0.*"
+cxx-compiler = "1.9.0.*"
+openblas = "*"
+
+# Install UNIT TEST dependencies
+gtest = "1.14.0.*"
+
+# Install VRS dependencies
+# - Note that some library are listed as '*' so pixi can pick the last compatible set of libraries versions
+boost = "1.84.0.*"
+fmt = "10.2.1.*"
+libjpeg-turbo = "*"
+libpng = "*"
+lz4 = "*"
+xxhash = "*"
+zlib = "*"
+libopus = "1.4*" # optional dependency
+ffmpeg = { version = "*", build = "*lgpl*" }
+
+[target.linux-64.dependencies]
+libgl-devel = "*"
+xorg-libx11 = "*"
+xorg-libxi = "*"
+xorg-libxcursor = "*"

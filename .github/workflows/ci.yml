@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          cmake \
+          build-essential \
+          g++ \
+          libopenblas-dev \
+          libgtest-dev \
+          libboost-all-dev \
+          libfmt-dev \
+          libjpeg-turbo8-dev \
+          libturbojpeg0-dev \
+          libpng-dev \
+          liblz4-dev \
+          libxxhash-dev \
+          zlib1g-dev \
+          libopus-dev \
+          libavcodec-dev \
+          libavformat-dev \
+          libavutil-dev \
+          libswscale-dev \
+          libgl1-mesa-dev \
+          libx11-dev \
+          libxi-dev \
+          libxcursor-dev
+
+    - name: Configure CMake
+      run: |
+        cmake -S . -B build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+          -DFFMPEG_INCLUDE_DIR=/usr/include/ffmpeg
+
+    - name: Build
+      run: |
+        cmake --build build -- -j$(nproc)
+
+    - name: Run Tests
+      run: |
+        ctest --test-dir build --output-on-failure

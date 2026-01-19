@@ -1,0 +1,13 @@
+# https://github.com/colmap/colmap/pull/2625
+# commit hash: 2633d1c4c3d4ae0f17a462faa3e334d9345a9c2b
+--find-links https://cvg-data.inf.ethz.ch/lamaria/packages/pycolmap/
+
+projectaria-tools[all]
+omegaconf
+scipy
+pandas
+tqdm
+ruff==0.12.7
+pycolmap==3.13.0
+
+-e git+https://github.com/cvg/Hierarchical-Localization.git@1252817#egg=hloc

@@ -1,0 +1,2 @@
+- compile with -j 32 always,
+- keep the version of sokol_gfx in context because you seem to assume an old version
