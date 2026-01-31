@@ -1,6 +1,6 @@
 [submodule "deps/baspacho"]
 	path = deps/baspacho
-	url = git@github.com:facebookresearch/baspacho.git
+	url = https://github.com/facebookresearch/baspacho
 [submodule "deps/projectaria_tools"]
 	path = deps/projectaria_tools
 	url = https://github.com/facebookresearch/projectaria_tools
