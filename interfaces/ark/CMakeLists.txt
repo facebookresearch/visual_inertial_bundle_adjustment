@@ -71,7 +71,11 @@ if(UNIX AND NOT APPLE)
     find_package(X11)
 endif()
 
-set(COMPILE_GUI_APP ${OpenGL_FOUND} AND (NOT UNIX OR APPLE OR X11_FOUND))
+if(${OpenGL_FOUND} AND (NOT UNIX OR APPLE OR X11_FOUND)) 
+    set(COMPILE_GUI_APP True)
+else()
+    set(COMPILE_GUI_APP False)
+endif()
 
 if(COMPILE_GUI_APP)
     message(STATUS "Everything for building gui library was found.")
@@ -105,7 +109,7 @@ if(COMPILE_GUI_APP)
             COMPILE_FLAGS "-x objective-c++"
         )
     elseif(UNIX AND NOT APPLE)
-        target_link_libraries(imgui_sokol PUBLIC X11::X11 X11::Xcursor X11::Xi OpenGL::GLX)
+        target_link_libraries(imgui_sokol PUBLIC X11::X11 X11::Xcursor X11::Xi ${OpenGL_GLX_LIBRARY})
     endif()
 
     set_property(TARGET imgui_sokol PROPERTY POSITION_INDEPENDENT_CODE ON)
