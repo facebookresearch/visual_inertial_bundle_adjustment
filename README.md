@@ -23,7 +23,7 @@ build/interfaces/ark/ark_vi_ba -i $VIBA_INPUT_DIR -o $OUTPUT_DIR
 A visualization of the optimization process can also be displayed on selected platforms (Linux-X11/Mac at this stage):
 
 ```
-build/interfaces/ark/ark_vi_ba -i $VIBA_INPUT_DIR -o $OUTPUT_DIR
+build/interfaces/ark/ark_vi_ba_gui -i $VIBA_INPUT_DIR -o $OUTPUT_DIR
 ```
 
 The input data in the folder $VIBA_INPUT_DIR should be:
