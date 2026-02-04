@@ -105,7 +105,15 @@ if(COMPILE_GUI_APP)
             COMPILE_FLAGS "-x objective-c++"
         )
     elseif(UNIX AND NOT APPLE)
-        target_link_libraries(imgui_sokol PUBLIC X11::X11 X11::Xcursor X11::Xi OpenGL::GLX)
+        target_link_libraries(imgui_sokol PUBLIC X11::X11 X11::Xcursor X11::Xi)
+
+        if(TARGET OpenGL::GLX)
+            target_link_libraries(imgui_sokol PUBLIC OpenGL::GLX)
+        elseif(DEFINED OpenGL_GLX_LIBRARY)
+            target_link_libraries(imgui_sokol PUBLIC ${OpenGL_GLX_LIBRARY})
+        else()
+            message(WARNING "OpenGL GLX library not found.")
+        endif()
     endif()
 
     set_property(TARGET imgui_sokol PROPERTY POSITION_INDEPENDENT_CODE ON)
