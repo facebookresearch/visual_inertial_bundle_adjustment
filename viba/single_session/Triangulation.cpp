@@ -135,8 +135,8 @@ void SingleSessionAdapter::refineTriangulationResult(
         continue;
       }
 
-      const Vec2 imageError = imgPt - procObs.projectionBaseRes.cast<double>();
-      const Vec2 weightedError = procObs.sqrtH_BaseRes.cast<double>() * imageError;
+      const Vec2 imageError = imgPt - procObs.projectionBaseRes.template cast<double>();
+      const Vec2 weightedError = procObs.sqrtH_BaseRes.template cast<double>() * imageError;
       const double squaredImageError = imageError.squaredNorm();
 
       if (squaredImageError < outlierSquaredThreshold) {
@@ -147,7 +147,7 @@ void SingleSessionAdapter::refineTriangulationResult(
       }
 
       const Mat23 dErr_dWorldPt =
-          procObs.sqrtH_BaseRes.cast<double>() * dImgPt_dCamPt * T_cam_world.rotationMatrix();
+          procObs.sqrtH_BaseRes.template cast<double>() * dImgPt_dCamPt * T_cam_world.rotationMatrix();
 
       const auto [softErr, dSoftErr] = loss.jet2(weightedError.squaredNorm());
       const Mat23 dLoss_dErr_dWorldPt = dSoftErr * dErr_dWorldPt;
