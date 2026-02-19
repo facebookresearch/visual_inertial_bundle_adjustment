@@ -45,7 +45,7 @@ struct InertialFactor {
 
     // rotation error
     const SO3 R_rotCorrection = SO3::exp(-preintCorrection.head<3>());
-    const SO3 corrected_R_ImuNext_ImuPrev = R_rotCorrection * preintegrationData_.rvp.R.inverse();
+    const SO3 corrected_R_ImuNext_ImuPrev = preintegrationData_.rvp.R.inverse() * R_rotCorrection;
     const SO3 R_rotErr =
         corrected_R_ImuNext_ImuPrev * prev_T_imu_world.so3() * next_T_imu_world.so3().inverse();
     const Vec3 logRotErr = -R_rotErr.log();
@@ -106,7 +106,8 @@ struct InertialFactor {
     // clang-format on
     if (!isNull(calib_Jacobian)) {
       const Mat33 dLogRotErr_dResidualCorrection =
-          dLogRotErr_dLeftRotError * SO3::leftJacobian(-preintCorrection.head<3>());
+          dLogRotErr_dLeftRotError * corrected_R_ImuNext_ImuPrev.Adj() *
+          SO3::leftJacobianInverse(-preintCorrection.head<3>());
       const int calibErrorSize = calib.estOpts->errorStateSize();
       XR_CHECK_EQ(calib_Jacobian.cols(), calibErrorSize);
 
