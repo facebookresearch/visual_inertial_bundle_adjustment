@@ -22,42 +22,38 @@ def _image_names_from_folder(
 
 def _match_estimate_ts_to_images(
     timestamps_to_images: dict[int, tuple[Path, Path]],
-    est_timestamps: list[int],
+    estimate: Trajectory,
     max_diff: int = 1000000,  # 1 ms
-) -> tuple[list[tuple[Path, Path]], list[int]]:
-    left_ts = list(timestamps_to_images.keys())
-    images = list(timestamps_to_images.values())
-    assert len(images) == len(left_ts), (
-        "Number of images and left timestamps must be equal"
-    )
+) -> tuple[list, list]: # Return matched Poses and matched Timestamps
+    left_ts = sorted(timestamps_to_images.keys())
+    
+    matched_poses = []
+    matched_img_timestamps = []
 
-    order = sorted(range(len(left_ts)), key=lambda i: left_ts[i])
-    left_ts = [left_ts[i] for i in order]
-    images = [images[i] for i in order]
-
-    matched_images: list[tuple[Path, Path]] = []
-    matched_timestamps: list[int] = []
-
-    # estimate timestamps will be in nanoseconds like vrs timestamps
-    for est in est_timestamps:
-        idx = bisect_left(left_ts, est)
+    # Iterate over the images as the anchor
+    for img_ts in left_ts:
+        # Find the closest timestamp in the trajectory
+        idx = bisect_left(estimate.timestamps, img_ts)
 
         cand_idxs = []
         if idx > 0:
             cand_idxs.append(idx - 1)
-        if idx < len(left_ts):
+        if idx < len(estimate.timestamps):
             cand_idxs.append(idx)
 
         if not cand_idxs:
             continue
 
-        best = min(cand_idxs, key=lambda j: abs(left_ts[j] - est))
-        if (max_diff is not None) and (abs(left_ts[best] - est) > max_diff):
+        best_idx = min(cand_idxs, key=lambda j: abs(estimate.timestamps[j] - img_ts))
+        
+        # Check if the trajectory has a pose close enough to this image
+        if (max_diff is not None) and (abs(estimate.timestamps[best_idx] - img_ts) > max_diff):
             continue
 
-        matched_images.append(images[best])
-        matched_timestamps.append(left_ts[best])
-    return dict(zip(matched_timestamps, matched_images))
+        matched_poses.append(estimate.poses[best_idx])
+        matched_img_timestamps.append(img_ts)
+        
+    return matched_poses, matched_img_timestamps
 
 
 def convert_estimate_into_timed_reconstruction(
@@ -68,21 +64,19 @@ def convert_estimate_into_timed_reconstruction(
     """
     Populate a TimedReconstruction from a trajectory
     """
-    est_timestamps_to_images = _match_estimate_ts_to_images(
-        timestamps_to_images, estimate.timestamps
+    
+    # Filter the trajectory down to only the poses that match an image
+    matched_poses, matched_timestamps = _match_estimate_ts_to_images(
+        timestamps_to_images, estimate
     )
 
-    assert estimate.corresponding_sensor == "imu"
-    timestamps = list(est_timestamps_to_images.keys())
-    assert len(estimate.poses) == len(timestamps), (
-        "The length of traj.poses and timestamps should be equal"
-    )
+    assert len(matched_poses) == len(matched_timestamps), "Mismatch in matched pairs"
 
     recon = deepcopy(init_reconstruction)
     image_id = 1
     frame_id_to_timestamp = dict()
     for frame_id, (pose, timestamp) in enumerate(
-        zip(estimate.poses, timestamps)
+        zip(matched_poses, matched_timestamps)
     ):
         frame = pycolmap.Frame()
         frame.rig_id = 1
